@@ -1284,48 +1284,6 @@ class dataProcess():
         facSum=factorStack(facSum, factorname)
         self.getData(facSum)
         
-    def doubleSorting(self,factor_list,method='cond',startMonth=200001,endMonth=210001,t=5,asc=''):
-        '''
-
-        Parameters
-        ----------
-        factor_list : list
-            必须传入一个列表 ['fac1','fac2']，表示求fac2在fac1条件下的双重排序
-                fac2在fac1条件下的双重排序命名为：'fac2|fac1'.
-        
-        method : str 'cond' or 'idp'
-            'cond'为条件双重排序，'idp'为独立双重排序
-
-        Returns
-        -------
-        第一个返回值为fac2|fac1的分组编号  数据形式同portfolioGroup.
-        第二个返回值为fac2|fac1的各组平均收益率
-
-        '''
-        data = self.dataBase['v'][['time','code']+factor_list].copy()
-        data = data[data.time>=startMonth]
-        data = data[data.time<=endMonth]
-        
-        RetData = getRetData()
-        RetData=RetData[RetData.time>=startMonth]
-        RetData=RetData[RetData.time<=endMonth]
-        
-        if(asc!=''):
-            ascloc=asc
-        else:
-            ascloc=False
-            
-        if method=='cond':
-            data = data.merge(RetData, on=['time','code'], how='outer').dropna()
-            data = data.groupby('time').apply(isinGroupT, factor_list[0], asc=ascloc, t=t).reset_index(drop=True)
-            data = data.groupby(['time',factor_list[0]]).apply(isinGroupT, factor_list[1], asc=ascloc, t=t).reset_index(drop=True)
-            
-        ls_ret = calcGroupRet(data,factor_list[1],RetData)
-        ls_ret['多空组合'] = ls_ret[1] - ls_ret[t]
-        data = data.rename(columns={factor_list[1]: ('%s|%s'%(factor_list[1], factor_list[0]))})
-        return data[['time','code',('%s|%s'%(factor_list[1], factor_list[0]))]], ls_ret
-        
-        
     #仍待完善    
     def factorFillNA(self, factor_list='', freq='month', method='median', window=12):
         '''
